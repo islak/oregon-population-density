@@ -22,6 +22,15 @@
         font-weight: 100;
         color: #005DAA; 
     }
+    b {
+        //text-align: center;
+        color: black;
+         position: absolute;
+    top: 3%;
+    left: 43%;
+        font-size: 10px;
+
+    }
     .county {
       stroke: #000000;
       fill:#000000;
@@ -55,6 +64,7 @@
 </head>
 <body>
     <h1>Oregon Counties</h1>
+        <b >Population per sqaure mile</b>
     		<div id="tooltip" class="hidden">
             <p>County/Population Density: <span id="county">County Name</span></p>
         </div>
@@ -72,7 +82,20 @@
             var color = d3.scaleThreshold()
                     .domain([1, 10, 50, 200, 500, 1000, 2000, 4000])
                     .range(d3.schemeOrRd[9]);
+      
+      
+            var x = d3.scaleLinear()
+                    .domain([0, 5100])
+                    .range([0, 480]); 
+      
+            var xAxis = d3.axisBottom()                                    
+                    .scale(x)
+                    .tickSize(13)
+                    .tickValues(color.domain())
+                    .tickFormat(function(d) { return d >= 100 ? formatNumber(d) : null; });
 
+      
+      
 			//Define path generator
 			var path = d3.geoPath()
 						 .projection(projection);
@@ -83,18 +106,34 @@
 						.attr("width", w)
 						.attr("height", h)
 						;
+      
+      
+            var g = svg.append("g")
+                        .attr("class", "key")
+                        .attr("transform", "translate(440,40)");
 			
-			var g = svg.append("g")
-    					.attr("class", "key")
-    					.attr("transform", "translate(0,40)");
-			
-			
+			var formatNumber = d3.format(",d");
+      
+   
+        g.selectAll("rect")
+                .data(color.range().map(function(d, i) {
+                    return {
+                        x0: i ? x(color.domain()[i - 1]) : x.range()[0],
+                        x1: i < color.domain().length ? x(color.domain()[i]) : x.range()[1],
+                        z: d
+                        };
+                    }))
+                    .enter().append("rect")
+                    .attr("height", 8)
+                    .attr("x", function(d) { return d.x0; })
+                .attr("width", function(d) { return d.x1 - d.x0; })
+                .style("fill", function(d) { return d.z; });
+
+      
 			g.selectAll("rect")
-			
 					.data(color.range().map(function(d) {
 						d = color.invertExtent(d);
 						console.log("color: ");
-						
 						return d;
 						}))
 					.enter().append("rect")
@@ -102,8 +141,6 @@
 						.attr("x", 500)
 						.attr("width", 300)
 						.attr("fill", function(d) { return color(10* d[0]); console.log(d); });						
-
-
 
 			g.append("text")
     					.attr("class", "caption")
@@ -113,6 +150,19 @@
 						.attr("text-anchor", "start")
 						.attr("font-weight", "bold")
 						.text("Population per square mile");
+      
+            svg.selectAll(".label") //Or simply (".label")
+                .append("text")
+                .attr("class","label")
+                .text("hello");
+      
+      
+            g.append("text")
+                    .attr("class", "caption")
+                    .attr("y", -6)
+                    .text("Population per square mile");
+
+      
       //Load in agriculture data
 			d3.csv("popdensity.csv", function(data) {
 
@@ -135,7 +185,7 @@
                             //console.log(jsonState);
 				
 							if (dataState == jsonState) {
-								console.log(jsonState); 
+								//console.log(jsonState); 
 								//Copy the data value into the JSON
 								json.features[j].properties.value = dataValue;
 								break;		
@@ -157,8 +207,8 @@
 					   		
 					   		if (value) {
 					   			//If value exists…
-                                console.log(value);
-                                console.log(color(value));
+                              //  console.log(value);
+                                //console.log(color(value));
 						   		return color(value);
 					   		} else {
 					   			//If value is undefined…
@@ -184,8 +234,33 @@
 				});
 			
 			});
+      
+      
+      g.call(xAxis);
 
   </script>
+        <!-- Submission Info -->
+    <h4>Assignment 7</h4>
+    <h4>Created by Hersh Kalsi </h4>
+      
+    <h4>Description:</h4>
+    <p>This is a simple population density chart that shows the population density of the state of Oregon by county.</p>
+    <!-- Create a list using <ul> and <li> tag -->   
+    <h4>Files Submitted:</h4>
+    
+    <ul>
+      <li>ORpopDensity.html</li>
+      <li>or-2.json</li>
+      <li>popdensity.csv</li>
+      <li>ORpopDensity.pdf</li>
+    </ul>
+      
+    <h4> Sources: </h4>
+      <li>D3 API Reference</li>
+      <li><a href ="https://bl.ocks.org/threestory/ed0f322d7bb2e3be8ded" target = "_blank">California Counties</a></li>
+      <li><a href ="https://bl.ocks.org/jadiehm/af4a00140c213dfbc4e6" target = "_blank">Choropleth U.S. county map</a></li>
+    <li><a href ="https://bl.ocks.org/d3noob/257c360b3650b9f0a52dd8257d7a2d73" target = "_blank">Simple Tooltips in v4</a></li>
+      
 </body>
 </html>
 
